@@ -12,6 +12,7 @@ bowl is empty a pump will be activated to top the bowl up.
 #Add packages here
 import os
 import sys
+import threading
 
 #Add the project directory to the path and import custom classes
 cur_folder = os.path.basename(os.getcwd())
@@ -33,23 +34,24 @@ import packages
 if __name__ == "__main__":
     print("CatBerry running")
 
-    dist = packages.Distance()
-    while(True):
-        flag = dist.Get_Distance()
-        print("Flag:", flag)
-        if flag:
-            break
+    event_dist = threading.Event()
+    event_upload = threading.Event()
+
+    dist = packages.Distance(event_dist)
+    flag = dist.Get_Distance()
+    
 
     base_path = os.getcwd()
 
     #Record video clip
-    cam = packages.Camera(base_path)
+    cam = packages.Camera(event_dist, event_upload, base_path)
     cam.RecordVideo()
 
     
     #upload
-    up = packages.Upload(base_path)
+    up = packages.Upload(event_upload, base_path)
     up.File_Upload()
+    print(up.Get_FileID())
     
 
     
